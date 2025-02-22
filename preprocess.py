@@ -18,16 +18,42 @@ label=data['label']
 
 nlp = spacy.load("en_core_web_sm")
 
+def expand_contractions(text):
+    contractions = {
+        "I'm": "I am",
+        "you're": "you are",
+        "he's": "he is",
+        "she's": "she is",
+        "it's": "it is",
+        "we're": "we are",
+        "they're": "they are",
+        "isn't": "is not",
+        "aren't": "are not",
+        "wasn't": "was not",
+        "weren't": "were not",
+        "don't": "do not",
+        "doesn't": "does not",
+        "didn't": "did not",
+        "won't": "will not",
+        "can't": "cannot",
+        "shouldn't": "should not",
+        "couldn't": "could not",
+        "wouldn't": "would not",
+    }
+    
+    for contraction, replacement in contractions.items():
+        text = re.sub(r"\b" + contraction + r"\b", replacement, text, flags=re.IGNORECASE)
+    
+    return text
+
 def preprocess_text(text):
-    doc = nlp(text.lower())  # Convert to lowercase and process text
+    text = expand_contractions(text)  
+    doc = nlp(text.lower())  
     
-    # Remove stopwords and punctuation, keep only lemmatized words
     clean_tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
-    
-    return " ".join(clean_tokens)  # Reconstruct cleaned sentence
 
-# Apply the preprocessing function to the dataset
+    return " ".join(clean_tokens)  
+
+
 data['clean_text'] = data['text'].apply(preprocess_text)
-
-# Display results
-print(data[['text', 'clean_text']].head)
+print(data[['text', 'clean_text']])
