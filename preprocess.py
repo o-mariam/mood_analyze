@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import re
 import spacy
-
+from spellchecker import SpellChecker
 # class TextPreprocessor(dataset):
 
 data=pd.read_csv("training.csv")
@@ -17,7 +17,7 @@ label=data['label']
 # data["clean_text"] = remove_special_char(text)
 
 nlp = spacy.load("en_core_web_sm")
-
+spell=SpellChecker()
 def expand_contractions(text):
     contractions = {
         "I'm": "I am",
@@ -38,7 +38,7 @@ def expand_contractions(text):
         "can't": "cannot",
         "shouldn't": "should not",
         "couldn't": "could not",
-        "wouldn't": "would not",
+        "wouldn't": "would not"
     }
     
     for contraction, replacement in contractions.items():
@@ -46,8 +46,25 @@ def expand_contractions(text):
     
     return text
 
+def spell_correction(text):
+    words = text.split()
+    corrected_words = []
+    for word in words:
+        corrected_word = spell.correction(word)
+        if corrected_word is None:  # Handle None values
+            corrected_word = word  # Use the original word if correction fails
+        corrected_words.append(corrected_word)
+    return " ".join(corrected_words)
+
+
+
+
 def preprocess_text(text):
+
+
     text = expand_contractions(text)  
+    text = spell_correction(text)
+
     doc = nlp(text.lower())  
     
     clean_tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
